@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="420.0" prefWidth="822.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
+   <children>
+      <Pane prefHeight="434.0" prefWidth="849.0">
+         <children>
+            <ToolBar prefHeight="0.0" prefWidth="849.0">
+              <items>
+                <Button fx:id="btn" mnemonicParsing="false" onAction="#btnHandler" text="button" />
+                  <Button fx:id="setColorBtn" mnemonicParsing="false" text="设置护眼色" onAction="#setColorBtnHandler" />
+              </items>
+            </ToolBar>
+            <Label fx:id="lbTime" layoutX="65.0" layoutY="94.0" prefHeight="160.0" prefWidth="322.0" style="-fx-background-color: grey;" text="Label" />
+            <Button fx:id="getTimeBtn" layoutX="408.0" layoutY="94.0" mnemonicParsing="false" onAction="#getTimeBtnHandler" text="获取当前时间" />
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>
