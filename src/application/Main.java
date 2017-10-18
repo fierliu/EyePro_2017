@@ -40,7 +40,7 @@ public class Main extends Application {
 		FXMLLoader fxmlloader = new FXMLLoader(getClass().getResource("/application/scene.fxml"));
 		Parent root = fxmlloader.load();
 		Scene scene = new Scene(root);
-		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+//		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
 		Controller controller = fxmlloader.getController();
 		//传递primaryStage参数给Controller
 		controller.setStage(primaryStage);
@@ -63,14 +63,29 @@ public class Main extends Application {
 //            	System.out.println(get_Time());
 //            	Platform.runLater(()->showTimedDialog(300000, "5 Min."));
 				if(get_Time().equals("30:00")){
-					Platform.runLater(()->showTimedDialog(300000, "5 Min."));
+					Platform.runLater(()->showTimedDialog(120000, "2 Min."));
 				}else if(get_Time().equals("00:00")){
-					Platform.runLater(()->showTimedDialog(600000, "10 Min."));
+					Platform.runLater(()->showTimedDialog(300000, "5 Min."));
 				}
-
             }
         };
         timer.schedule (timerTask, 0, 1000);
+//定时提醒
+		ReadBreak rb = new ReadBreak();
+		int remindTime = rb.readBreak();
+//		System.out.println("flag:"+rb.readFlag());
+//		System.out.println("remindTime:"+remindTime);
+
+	    TimerTask settedTime = new TimerTask() {
+			@Override
+			public void run() {
+				if (rb.readFlag().equals(1)){
+//				System.out.println("11");
+				Platform.runLater(()->showTimedDialog(300000, "Time's Up!"));
+				}
+			}
+		};
+		timer.schedule(settedTime, remindTime, remindTime);
 	}
 	public String get_Time() {
         Calendar calendar = Calendar.getInstance();
@@ -82,22 +97,22 @@ public class Main extends Application {
 	public void showTimedDialog(long time, String message) {
 	    Stage popup = new Stage();
 	    popup.setAlwaysOnTop(true);
+	    popup.setResizable(false);
 	    popup.initModality(Modality.APPLICATION_MODAL);
+	    popup.getIcons().add(new Image("/application/eye.png"));
 	    Button closeBtn = new Button("Get it!");
 	    closeBtn.setOnAction(e -> {
 	        popup.close();
 	    });
 	    VBox root = new VBox();
-	    root.setPadding(new Insets(20));
-	    root.setAlignment(Pos.BOTTOM_CENTER);//显示位置
-	    root.setSpacing(20);
+	    root.setPadding(new Insets(10));
+	    root.setAlignment(Pos.CENTER);//显示位置
+	    root.setSpacing(10);
 	    root.getChildren().addAll(new Label(message), closeBtn);
 	    Scene scene = new Scene(root);
 	    popup.setScene(scene);
 	    popup.setTitle("Rest");
 	    Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
-//	    popup.setX(primScreenBounds.getWidth()-primScreenBounds.getWidth()/9);
-//	    popup.setY(primScreenBounds.getHeight()-primScreenBounds.getWidth()/10);
 	    popup.setX(primaryScreenBounds.getMinX() + primaryScreenBounds.getWidth() - 180);
 	    popup.setY(primaryScreenBounds.getMinY() + primaryScreenBounds.getHeight() - 130);
 	    popup.setWidth(180);
@@ -116,18 +131,6 @@ public class Main extends Application {
 	    });
 	    thread.setDaemon(true);
 	    thread.start();
-//	    提示窗口上显示倒计时
-//	    Timer timer = new Timer();
-//        TimerTask  timerTask = new TimerTask (){
-//            public void run() {
-//            	System.out.println(get_Time());
-//
-//				if(get_Time().equals("30:00")){
-//					Platform.runLater(()->showTimedDialog(50000, "5 Min."));
-//				}
-//            }
-//        };
-//        timer.schedule (timerTask, 0, 1000);
 	}
 
 
