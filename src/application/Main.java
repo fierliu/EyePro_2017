@@ -1,18 +1,24 @@
 package application;
 
+import java.awt.AWTException;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.net.URISyntaxException;
 import java.util.Timer;
 import java.util.TimerTask;
-
+import javax.imageio.ImageIO;
+import com.sun.speech.freetts.Voice;
+import com.sun.speech.freetts.VoiceManager;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.Rectangle2D;
@@ -28,31 +34,37 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.VBox;
 
+
 public class Main extends Application {
 	public String time;
+	private boolean firstTime;
+    private TrayIcon trayIcon;
+	Property rb = new Property();
+	Controller controller;
 	@FXML
-
 	public void init(){
-
 	}
 	@Override
-	public void start(Stage primaryStage) throws IOException {
+	public void start(Stage primaryStage) throws IOException, URISyntaxException {
+		createTrayIcon(primaryStage);
+        firstTime = true;
+        Platform.setImplicitExit(false);
 		FXMLLoader fxmlloader = new FXMLLoader(getClass().getResource("/application/scene.fxml"));
 		Parent root = fxmlloader.load();
 		Scene scene = new Scene(root);
 //		scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-		Controller controller = fxmlloader.getController();
+		controller = fxmlloader.getController();
 		//传递primaryStage参数给Controller
 		controller.setStage(primaryStage);
 		primaryStage.getIcons().add(new Image("/application/eye.png"));
 		primaryStage.setTitle("EyePro");
 		//terminate the all threads when close button clicked.
-		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>(){
-			@Override
-			public void handle(WindowEvent event){
-				System.exit(0);
-			}
-		});
+//		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>(){
+//			@Override
+//			public void handle(WindowEvent event){
+//				System.exit(0);
+//			}
+//		});
 		primaryStage.setResizable(false);
 		primaryStage.setScene(scene);
 		primaryStage.show();
@@ -62,45 +74,32 @@ public class Main extends Application {
             public void run() {
 //            	System.out.println(get_Time());
 //            	Platform.runLater(()->showTimedDialog(300000, "5 Min."));
-				if(get_Time().equals("30:00")){
-					Platform.runLater(()->showTimedDialog(120000, "2 Min."));
-				}else if(get_Time().equals("00:00")){
-					Platform.runLater(()->showTimedDialog(300000, "5 Min."));
+				if(controller.get_Time().equals("30:00")&rb.get_halfFlag().equals(1)){
+					Platform.runLater(()->{
+						showTimedDialog(120000, "2 Min.");
+						tts("It's "+ controller.get_Comp_time() +"now.");
+						});
+				}else if(controller.get_Time().equals("27:40")&rb.get_halfFlag().equals(1)){
+					Platform.runLater(()->{
+						showTimedDialog(300000, "5 Min.");
+						tts("It's "+ controller.get_Comp_time() +"now.");
+							});
 				}
             }
         };
         timer.schedule (timerTask, 0, 1000);
-//定时提醒
-		ReadBreak rb = new ReadBreak();
-		int remindTime = rb.readBreak();
-//		System.out.println("flag:"+rb.readFlag());
-//		System.out.println("remindTime:"+remindTime);
 
-	    TimerTask settedTime = new TimerTask() {
-			@Override
-			public void run() {
-				if (rb.readFlag().equals(1)){
-//				System.out.println("11");
-				Platform.runLater(()->showTimedDialog(300000, "Time's Up!"));
-				}
-			}
-		};
-		timer.schedule(settedTime, remindTime, remindTime);
+
 	}
-	public String get_Time() {
-        Calendar calendar = Calendar.getInstance();
-        Date date = (Date) calendar.getTime();
-        SimpleDateFormat format = new SimpleDateFormat("mm:ss");
-        time = format.format(date);
-        return time;
-	}
+
 	public void showTimedDialog(long time, String message) {
+		//判断定时提醒是否是开的
 	    Stage popup = new Stage();
 	    popup.setAlwaysOnTop(true);
 	    popup.setResizable(false);
 	    popup.initModality(Modality.APPLICATION_MODAL);
 	    popup.getIcons().add(new Image("/application/eye.png"));
-	    Button closeBtn = new Button("Get it!");
+	    Button closeBtn = new Button("Got it!");
 	    closeBtn.setOnAction(e -> {
 	        popup.close();
 	    });
@@ -123,7 +122,10 @@ public class Main extends Application {
 	        try {
 	            Thread.sleep(time);
 	            if (popup.isShowing()) {
-	                Platform.runLater(() -> popup.close());
+	                Platform.runLater(() -> {
+	                	popup.close();
+	                	tts("End the break.");
+	                });
 	            }
 	        } catch (Exception exp) {
 	            exp.printStackTrace();
@@ -132,8 +134,118 @@ public class Main extends Application {
 	    thread.setDaemon(true);
 	    thread.start();
 	}
+	public void createTrayIcon(final Stage stage) throws URISyntaxException {
+        if (SystemTray.isSupported()) {
+            // get the SystemTray instance
+            SystemTray tray = SystemTray.getSystemTray();
+            // load an image
+            java.awt.Image image = null;
+            try {
+                File pathToFile = new File("trayPic.png");
+                image = ImageIO.read(pathToFile);
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+            stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+                @Override
+                public void handle(WindowEvent t) {
+                    hide(stage);
+                }
+            });
+            // create a action listener to listen for default action executed on the tray icon
+            final ActionListener closeListener = new ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    System.exit(0);
+                }
+            };
 
+            ActionListener showListener = new ActionListener() {
+                @Override
+                public void actionPerformed(java.awt.event.ActionEvent e) {
+                    Platform.runLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            stage.show();
+//                            System.out.println("showListener!");
+                        }
+                    });
+                }
+            };
+            // create a popup menu
+            PopupMenu popup = new PopupMenu();
 
+            MenuItem showItem = new MenuItem("Show");
+            showItem.addActionListener(showListener);
+            popup.add(showItem);
+
+            MenuItem closeItem = new MenuItem("Close");
+            closeItem.addActionListener(closeListener);
+            popup.add(closeItem);
+            /// ... add other items
+            // construct a TrayIcon
+            trayIcon = new TrayIcon(image, "EyePro", popup);
+            // set the TrayIcon properties
+            trayIcon.addActionListener(showListener);
+
+            // ...
+            // add the tray image
+            try {
+                tray.add(trayIcon);
+            } catch (AWTException e) {
+                System.err.println(e);
+            }
+            // ...
+        }
+    }
+
+    public void showProgramIsMinimizedMsg() {
+        if (firstTime) {
+            trayIcon.displayMessage("Notice",
+                    "Application has been hidden in the system tray",
+                    TrayIcon.MessageType.INFO);
+            firstTime = false;
+        }
+    }
+
+    private void hide(final Stage stage) {
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                if (SystemTray.isSupported()) {
+                    stage.hide();
+                    showProgramIsMinimizedMsg();
+                } else {
+                    System.exit(0);
+                }
+            }
+        });
+    }
+    public void tts(String str){
+    	if(rb.get_soundFlag().equals(1)){
+	    	VoiceManager vm = VoiceManager.getInstance();
+	        Voice voice = vm.getVoice("kevin16");
+	        voice.allocate();
+	        voice.speak(str);
+    	}
+    }
+    public void fixed_reminded(){
+    	//定时提醒，当定时更改时需及时处理，否则不能立即生效
+    	Timer timer = new Timer();
+		int remindTime = rb.readBreak();
+//    			System.out.println("flag:"+rb.readFlag());
+//    			System.out.println("remindTime:"+remindTime);
+	    TimerTask settedTime = new TimerTask() {
+			@Override
+			public void run() {
+				if (rb.readFlag().equals(1)){
+//    					System.out.println("11");
+				Platform.runLater(()->showTimedDialog(300000, "Time's Up!"));
+					}
+				}
+			};
+			timer.schedule(settedTime, remindTime, remindTime);
+}
 	public static void main(String[] args) {
 		launch(args);
 	}

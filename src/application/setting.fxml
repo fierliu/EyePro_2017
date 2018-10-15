@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane fx:id="pnSetting" prefHeight="327.0" prefWidth="243.0" xmlns:fx="http://javafx.com/fxml/1"
+	xmlns="http://javafx.com/javafx/8" fx:controller="application.SettingController">
+   <children>
+      <VBox fx:id="pnSetting" prefHeight="328.0" prefWidth="249.0">
+         <children>
+            <RadioButton fx:id="rb_sharp" mnemonicParsing="false" text="整点提醒" />
+            <RadioButton fx:id="rb_half" mnemonicParsing="false" text="半点提醒" />
+            <RadioButton fx:id="rb_sound" mnemonicParsing="false" text="提醒语音" />
+            <RadioButton fx:id="rb_fixed" mnemonicParsing="false" text="定时提醒" />
+            <Label text="单次定时提醒时间(min)：" />
+            <ChoiceBox fx:id="choice" prefWidth="150.0" />
+            <Label text="自定义单次提醒时间(min)：" />
+            <TextField fx:id="tf" />
+            <Button fx:id="btnOk" mnemonicParsing="false" text="确定" onAction="#btnOk_handler" />
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+  <flag>0</flag>
+  <breakTime>660000</breakTime>
+  <sharpFlag>1</sharpFlag>
+  <halfFlag>1</halfFlag>
+  <soundFlag>1</soundFlag>
+</config>
